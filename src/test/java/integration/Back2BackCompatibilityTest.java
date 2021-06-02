@@ -75,18 +75,6 @@ public class Back2BackCompatibilityTest {
     }
 
     @Test
-    public void checkGifLwMojo() throws Exception {
-        final File basedir = resources.getBasedir("truncate-project");
-        final MavenExecution mavenExecution = maven
-                .forProject(basedir)
-                .withCliOption("-Pgiflw");
-        final MavenExecutionResult result = mavenExecution.execute("clean", "com.github.jmdesprez:plantuml-maven-plugin:generate");
-        result.assertErrorFreeLog();
-        assertFilesPresent(basedir, "target/plantuml/AblaufManuelleGenerierung.png");
-        assertFilesPresent(basedir, "target/plantuml/QueueStatechart.png");
-    }
-
-    @Test
     public void checkJeluardMojo() throws Exception {
         final File basedir = resources.getBasedir("truncate-project");
         final MavenExecution mavenExecution = maven
