@@ -1,5 +1,4 @@
 @startuml
-!pragma graphviz_dot jdot
 
 state "Empty" as Empty
 state "Not Empty" as NotEmpty

@@ -1,6 +1,4 @@
 @startuml
-!pragma graphviz_dot jdot
-
 
 interface AbstractQueueFluentBuilder <<generierte Spec des Fluent API>>
 note right: generiert
