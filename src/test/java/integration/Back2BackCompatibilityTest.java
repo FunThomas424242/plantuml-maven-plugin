@@ -20,14 +20,12 @@ package integration;
  * #L%
  */
 
-
 import io.takari.maven.testing.TestResources;
 import io.takari.maven.testing.executor.MavenExecution;
 import io.takari.maven.testing.executor.MavenExecutionResult;
 import io.takari.maven.testing.executor.MavenRuntime;
 import io.takari.maven.testing.executor.MavenVersions;
 import io.takari.maven.testing.executor.junit.MavenJUnitTestRunner;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,7 +36,7 @@ import static io.takari.maven.testing.TestResources.assertFilesPresent;
 
 // http://takari.io/book/70-testing.html
 @RunWith(MavenJUnitTestRunner.class)
-@MavenVersions({"3.6.3"})
+@MavenVersions({ "3.1.1", "3.2.5", "3.3.9", "3.5.4", "3.6.3", "3.8.1" })
 public class Back2BackCompatibilityTest {
 
     @Rule
@@ -47,44 +45,42 @@ public class Back2BackCompatibilityTest {
     public final MavenRuntime maven;
 
     public Back2BackCompatibilityTest(MavenRuntime.MavenRuntimeBuilder builder) throws Exception {
-        this.maven = builder.withCliOptions("-B", "-U").build();
+        maven = builder.withCliOptions("-B", "-U").build();
     }
 
     @Test
     public void checkHuluvu424242Mojo() throws Exception {
-        final File basedir = resources.getBasedir("truncate-project");
-        final MavenExecution mavenExecution = maven
-                .forProject(basedir)
-                .withCliOption("-Pfunthomas424242");
-        final MavenExecutionResult result = mavenExecution.execute("clean", "com.github.funthomas424242:plantuml-maven-plugin:generate");
-        result.assertErrorFreeLog();
-        assertFilesPresent(basedir, "target/plantuml/AblaufManuelleGenerierung.png");
-        assertFilesPresent(basedir, "target/plantuml/QueueStatechart.png");
+        checkMojo("funthomas424242", true);
     }
 
     @Test
-    public void checkBvFalconMojo() throws Exception {
-        final File basedir = resources.getBasedir("truncate-project");
-        final MavenExecution mavenExecution = maven
-                .forProject(basedir)
-                .withCliOption("-Pbvfalcon");
-        final MavenExecutionResult result = mavenExecution.execute("clean", "com.github.jmdesprez:plantuml-maven-plugin:generate");
-        result.assertErrorFreeLog();
-        assertFilesPresent(basedir, "target/plantuml/AblaufManuelleGenerierung.png");
-        assertFilesPresent(basedir, "target/plantuml/QueueStatechart.png");
+    public void checkJmdesprezMojo() throws Exception {
+        checkMojo("jmdesprez", true);
     }
 
     @Test
     public void checkJeluardMojo() throws Exception {
-        final File basedir = resources.getBasedir("truncate-project");
-        final MavenExecution mavenExecution = maven
-                .forProject(basedir)
-                .withCliOption("-Pjeluard");
-        final MavenExecutionResult result = mavenExecution.execute("clean", "com.github.jeluard:plantuml-maven-plugin:generate");
+        checkMojo("jeluard", false);
+    }
+
+    private void checkMojo(String githubID, boolean canTruncatePattern) throws Exception {
+        File baseDir = resources.getBasedir("truncate-project");
+        MavenExecution mavenExecution = maven.forProject(baseDir).withCliOption("-P" + githubID);
+        String pluginMavenCoordinates = "com.github." + githubID + ":plantuml-maven-plugin:generate";
+        MavenExecutionResult result = mavenExecution.execute("clean", pluginMavenCoordinates);
         result.assertErrorFreeLog();
-        // HINT: jeluard plugin does not support truncatePattern
-        assertFilesPresent(basedir, "target/plantuml/src/main/plantuml/AblaufManuelleGenerierung.png");
-        assertFilesPresent(basedir, "target/plantuml/src/main/plantuml/QueueStatechart.png");
+
+        // 'jdot' binary not found 
+        result.assertNoLogText("java.io.IOException");
+
+        // Problems interacting with Semtana API
+        result.assertNoLogText("java.lang.InvocationTargetException");
+        result.assertNoLogText("java.lang.UnsupportedOperationException");
+        result.assertNoLogText("java.lang.ClassFormatError");
+
+        String subDir = "target/plantuml/" + (canTruncatePattern ? "" : "src/main/plantuml/");
+        assertFilesPresent(baseDir, subDir + "AblaufManuelleGenerierung.png");
+        assertFilesPresent(baseDir, subDir + "QueueStatechart.png");
     }
 }
 
