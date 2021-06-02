@@ -36,7 +36,11 @@ import static io.takari.maven.testing.TestResources.assertFilesPresent;
 
 // http://takari.io/book/70-testing.html
 @RunWith(MavenJUnitTestRunner.class)
-@MavenVersions({ "3.1.1", "3.2.5", "3.3.9", "3.5.4", "3.6.3", "3.8.1" })
+// Maven 3.1.1 works, but is so old it wants to download from Maven Central via HTTP instead of HTTPS. But HTTP download
+// has been deactivated by Sonatype a while ago. If someone works with a proxy or behind a Nexus + firewall in an
+// enterprise setting on an old Maven version, this can still work. Maven 3.1.1 can use this plugin, it is simply a
+// download problem.
+@MavenVersions({ /*"3.1.1",*/ "3.2.5", "3.3.9", "3.5.4", "3.6.3", "3.8.1" })
 public class Back2BackCompatibilityTest {
 
     @Rule
